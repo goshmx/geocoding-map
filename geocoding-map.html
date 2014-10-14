@@ -1,0 +1,295 @@
+<!--
+    @license
+    Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
+    This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+    The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+    The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+    Code distributed by Google as part of the polymer project is also
+    subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core-input/core-input.html">
+<link rel="import" href="../google-apis/google-apis.html">
+
+<!--
+Element providing solution to geolocation using google maps API and Geocoder API.
+
+##### Example
+
+    <geocoding-map></geocoding-map>
+
+@element geocoding-map
+@blurb Element providing solution to geolocation using google maps API and Geocoder API.
+@status alpha
+@homepage http://goshmx.github.io/geocoding-map
+-->
+<polymer-element name="geocoding-map" attributes="latitude longitude mapType zoom disableDefaultUI maxZoom minZoom styles route street_number neighborhood locality administrative_area_1 administrative_area_2 country location_suffix">
+
+    <template>
+        <link rel="stylesheet" href="geocoding-map.css">
+        <google-maps-api apiKey="{{apiKey}}" version="{{version}}" on-api-load="{{mapApiLoaded}}" libraries="{{libraries}}"></google-maps-api>
+        <core-input id="geocoderDireccion" placeholder="Direction..." on-change="{{geoDireccion}}"></core-input>
+        <div id="mapa"></div>
+    </template>
+
+    <script>
+        Polymer('geocoding-map',{
+            geocoder:null,
+            map:null,
+            marker:null,
+            apiKey: null,
+            libraries: "places",
+            version: '3.exp',
+            /**
+             * The component latitude coordinate.
+             *
+             * @attribute latitude
+             * @type number
+             * @default 17.06096368692176
+             */
+            latitude:17.06096368692176,
+            /**
+             * The component longitude coordinate.
+             *
+             * @attribute longitude
+             * @type number
+             * @default -96.72480779266357
+             */
+            longitude: -96.72480779266357,
+            /**
+             * The initial zoom from the map
+             *
+             * @attribute zoom
+             * @type integer
+             * @default 14
+             */
+            zoom: 14,
+            /**
+             * The map type selected as default
+             *
+             * @attribute mapType
+             * @type roadmap, satellite, hybrid, terrain
+             * @default 'roadmap'
+             */
+            mapType: 'roadmap', // roadmap, satellite, hybrid, terrain
+            /**
+             * Disable/Enable the map UIControls
+             *
+             * @attribute disableDefaultUI
+             * @type Boolean
+             * @default false
+             */
+            disableDefaultUI: false,
+            styles: {},
+            route:null,
+            street_number:null,
+            neighborhood:null,
+            administrative_area_1: null,
+            administrative_area_2: null,            
+            country: null,
+            locality:null,
+            /**
+             * Add a suffix to geocoder search
+             *
+             * @attribute location_suffix
+             * @type String
+             * @default ''
+             */
+            location_suffix: '',
+            maxZoom: null,
+            minZoom: null,
+            zoomable: true,
+            observe: {
+                latitude: 'updateCenter',
+                longitude: 'updateCenter'
+            },
+            ready: function() {
+            },
+            /**
+             * Method helper from the observers, update de position in the map and marker.
+             *
+             * @method updateCenter
+             */
+            updateCenter: function(){
+                this.map.setCenter(new google.maps.LatLng(this.latitude,this.longitude));
+                this.marker.setPosition(new google.maps.LatLng(this.latitude,this.longitude));
+                this.geoposiciona(new google.maps.LatLng(this.latitude,this.longitude));
+            },
+            /**
+             * Method launched when the API it's full loaded. Load map, marker and Listeners.
+             *
+             * @method mapApiLoaded
+             */
+            mapApiLoaded: function() {
+                this.geocoder = new google.maps.Geocoder();
+                var elemento = this;
+                var input = this.$.geocoderDireccion;
+                this.map = new google.maps.Map(this.$.mapa, this.getMapOptions());
+                this.marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(this.latitude,this.longitude),
+                    map: this.map,
+                    title:"Localizacion",
+                    draggable: true
+                });
+                this.geoposiciona(new google.maps.LatLng(this.latitude,this.longitude));
+                google.maps.event.addListener(elemento.map, 'click', function(posicion) {
+                    elemento.cadena('Cargando...');
+                    elemento.marker.setPosition(posicion.latLng);
+                    elemento.geoposiciona(posicion.latLng);
+                    var pos = posicion.latLng;
+                    elemento.latitude = pos.lat();
+                    elemento.longitude = pos.lng();
+                });
+                google.maps.event.addListener(elemento.marker, 'dragstart', function() {
+                    elemento.cadena('Cargando...');
+                });
+                google.maps.event.addListener(elemento.marker, 'drag', function() {
+                    elemento.cadena('Cargando...');
+                });
+                google.maps.event.addListener(elemento.marker, 'dragend', function() {
+                    elemento.cadena('');
+                    elemento.geoposiciona(elemento.marker.getPosition());
+                });
+            },
+            /**
+             * Get the map properties
+             *
+             * @method getMapOptions
+             * @return {Object} Returns the option object.
+             */
+            getMapOptions: function() {
+                var mapOptions = {
+                    center: new google.maps.LatLng(this.latitude, this.longitude),
+                    zoom: this.zoom,
+                    mapTypeId: this.mapType,
+                    disableDefaultUI: this.disableDefaultUI,
+                    disableDoubleClickZoom: !this.zoomable,
+                    scrollwheel: this.zoomable,
+                    styles: this.styles,
+                    maxZoom: Number(this.maxZoom),
+                    minZoom: Number(this.minZoom)
+                };
+                return mapOptions;
+            },
+            cadena: function(cadena){
+                this.$.geocoderDireccion.value = cadena;
+            },
+            /**
+             * Clean the attributes result from the geocoder .
+             *
+             * @method limpiaCampos
+             */
+            limpiaCampos: function(){
+                this.route = null;
+                this.street_number=null;
+                this.neighborhood=null;
+                this.administrative_area_1= null;
+                this.administrative_area_2= null;
+                this.country= null;
+                this.locality=null;
+            },
+            geoposiciona: function (pos) {
+                this.limpiaCampos();
+                var elemento = this;
+                this.geocoder.geocode({
+                    latLng: pos
+                }, function(responses) {
+                    if (responses && responses.length > 0) {
+                        elemento.cadena(responses[0].formatted_address);
+                        geoarray=responses;
+                        for(var j in geoarray[0].address_components){
+                            if(geoarray[0].address_components[j].types[0]=='route'){
+                                elemento.route = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='neighborhood'){
+                                elemento.neighborhood = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='street_number'){
+                                elemento.street_number = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='locality'){
+                                elemento.locality = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='administrative_area_level_1'){
+                                elemento.administrative_area_1 = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='administrative_area_level_2'){
+                                elemento.administrative_area_2 = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='country'){
+                                elemento.country = geoarray[0].address_components[j].short_name;
+                            }
+                            if(geoarray[0].address_components[j].types[0]=='postal_code'){
+                                elemento.postal_code = geoarray[0].address_components[j].short_name;
+                            }
+                        }
+                    } else {
+                        elemento.cadena('');
+                    }
+                });
+            },
+            geoDireccion: function(){
+                this.limpiaCampos();
+                var elemento = this;
+                var cadena = this.$.geocoderDireccion.inputValue+' '+this.location_suffix;
+                if (this.geocoder) {
+                    this.geocoder.geocode( { 'address': cadena}, function(results, status) {
+                        if (status == google.maps.GeocoderStatus.OK){
+                            elemento.map.setCenter(results[0].geometry.location);
+                            elemento.marker.setPosition(results[0].geometry.location);
+                            geoarray=results;
+                            for(var j in geoarray[0].address_components){
+                                if(geoarray[0].address_components[j].types[0]=='route'){
+                                    elemento.route = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='neighborhood'){
+                                    elemento.neighborhood = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='street_number'){
+                                    elemento.street_number = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='locality'){
+                                    elemento.locality = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='administrative_area_level_1'){
+                                    elemento.administrative_area_1 = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='administrative_area_level_2'){
+                                    elemento.administrative_area_2 = geoarray[0].address_components[j].short_name;
+                                }
+                                if(geoarray[0].address_components[j].types[0]=='postal_code'){
+                                    elemento.postal_code = geoarray[0].address_components[j].short_name;
+                                }
+                            }
+                            var latlon = results[0].geometry.location;
+                            elemento.latitude = latlon.lat();
+                            elemento.longitude = latlon.lng();
+                        }
+                    });
+                }
+            },
+            /**
+             * Return a JSON notation object with information result from the geocoder API.
+             *
+             * @method informacion
+             * @return {Object} Returns a object with data directions.
+             */
+            informacion: function(){
+                var resultado = {
+                    latitude: this.latitude,
+                    longitude: this.longitude,
+                    route: this.route,
+                    street_number: this.street_number,
+                    neighborhood: this.neighborhood,
+                    locality: this.locality,
+                    postal_code: this.postal_code,
+                    administrative_area_1: this.administrative_area_1,
+                    administrative_area_2: this.administrative_area_2,
+                    country: this.country
+                };
+                return resultado;
+            }
+        });
+    </script>®
+
+</polymer-element>
