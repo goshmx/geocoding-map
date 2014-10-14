@@ -1,19 +1,22 @@
 {
-  "name": "seed-element",
-  "version": "0.0.0",
+  "name": "geocoding-map",
+  "version": "0.0.1",
   "authors": [
-    "Anonymous <anonymous@example.com>"
+    "Gosh @gosh_"
   ],
-  "description": "Element providing solution to no problem in particular.",
+  "description": "Element providing solution to geolocation using google maps API and Geocoder API.",
   "keywords": [
     "web-component",
     "web-components",
     "polymer",
-    "seed"
+    "map",
+    "google",
+    "geocoding",
+    "location"
   ],
-  "main": "seed-element.html",
+  "main": "geocoding-map.html",
   "license": "MIT",
-  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "homepage": "https://github.com/goshmx/geocoding-map/",
   "ignore": [
     "/.*",
     "/tests/"
