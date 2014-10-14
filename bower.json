@@ -1,0 +1,7 @@
+{
+  "name": "geocoding-map#gh-pages",
+  "private": true,
+  "dependencies": {
+    "seed-element": "goshmx/geocoding-map#master"
+  }
+}

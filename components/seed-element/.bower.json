@@ -1,0 +1,38 @@
+{
+  "name": "seed-element",
+  "authors": [
+    "Anonymous <anonymous@example.com>"
+  ],
+  "description": "Element providing solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "seed"
+  ],
+  "main": "seed-element.html",
+  "license": "MIT",
+  "homepage": "https://github.com/<USERNAME>/seed-element/",
+  "ignore": [
+    "/.*",
+    "/tests/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^0.4.1",
+    "google-apis": "GoogleWebComponents/google-apis#~0.3.2",
+    "core-input": "Polymer/core-input#~0.4.2"
+  },
+  "devDependencies": {
+    "web-component-tester": "Polymer/web-component-tester#^0.7.3"
+  },
+  "_release": "e8d6ba9298",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "e8d6ba9298f0861d2762e05966dc1a567ffdf0e7"
+  },
+  "_source": "git://github.com/goshmx/geocoding-map.git",
+  "_target": "master",
+  "_originalSource": "goshmx/geocoding-map",
+  "_direct": true
+}
